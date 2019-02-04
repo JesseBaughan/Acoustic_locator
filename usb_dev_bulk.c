@@ -671,7 +671,7 @@ void ADC10IntHandler(void)
     }
 }
 
-void InitADC (void) {
+void ConfigureADC (void) {
 	
 	//ADC 0
 	SysCtlPeripheralEnable(SYSCTL_PERIPH_ADC0);
@@ -703,12 +703,12 @@ void InitADC (void) {
    uDMAChannelTransferSet(UDMA_CHANNEL_ADC1 | UDMA_PRI_SELECT,
                                UDMA_MODE_PINGPONG,
 							   (void *) (ADC0_BASE + ADC_O_SSFIFO1),
-							   &g_adcPingPong0[0][0], NUM_CHANNELS); //destination is ADC0 FIFO, source is adcPingPong0 - A
+							   &g_adcPingPong0[0][0], NUM_CHANNELS); //source is ADC0 FIFO, destination is adcPingPong0 - A
 
    uDMAChannelTransferSet(UDMA_CHANNEL_ADC1 | UDMA_ALT_SELECT,
                                UDMA_MODE_PINGPONG,
 							   (void *) (ADC0_BASE + ADC_O_SSFIFO1),
-							   &g_adcPingPong0[1][0], NUM_CHANNELS); //destination is ADC0 FIFO, source is adcPingPong0 - B
+							   &g_adcPingPong0[1][0], NUM_CHANNELS); //source is ADC0 FIFO, destination is adcPingPong0 - B
 								 
    g_adcInIndex0 = 2;
 	
@@ -748,6 +748,7 @@ void InitADC (void) {
                                UDMA_MODE_PINGPONG,
 							   (void *) (ADC1_BASE + ADC_O_SSFIFO1),
 							   &g_adcPingPong1[1][0], NUM_CHANNELS);
+								 
    uDMAChannelAssign(UDMA_CH25_ADC1_1);
    g_adcInIndex1 = 2;
 								 
@@ -761,7 +762,6 @@ void InitADC (void) {
 	ADCIntClear(ADC1_BASE, 1);
   ADCIntEnable(ADC0_BASE, 1);
 	ADCIntEnable(ADC1_BASE, 1);
-	
 	IntEnable(INT_ADC0SS1);
 	IntEnable(INT_ADC1SS1);
 	
@@ -782,125 +782,89 @@ main(void)
     volatile uint32_t ui32Loop;
     uint32_t ui32TxCount;
     uint32_t ui32RxCount;
-
-    //
-    // Enable lazy stacking for interrupt handlers.  This allows floating-point
-    // instructions to be used within interrupt handlers, but at the expense of
-    // extra stack usage.
-    //
+	
     //ROM_FPULazyStackingEnable();
 
-    //
     // Set the clocking to run from the PLL at 50MHz
-    //
-    ROM_SysCtlClockSet(SYSCTL_SYSDIV_4 | SYSCTL_USE_PLL | SYSCTL_OSC_MAIN |
-                       SYSCTL_XTAL_16MHZ);
-
-    //
-    // Enable the GPIO port that is used for the on-board LED.
-    //
-    ROM_SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOF);
-
-    //
-    // Enable the GPIO pins for the LED (PF2 & PF3).
-    //
-    ROM_GPIOPinTypeGPIOOutput(GPIO_PORTF_BASE, GPIO_PIN_3 | GPIO_PIN_2);
-
-    //
-    // Open UART0 and show the application name on the UART.
-    //
-    ConfigureUART();
-
-    UARTprintf("\033[2JTiva C Series USB bulk device example\n");
-    UARTprintf("---------------------------------\n\n");
-
-    //
-    // Not configured initially.
-    //
-    g_bUSBConfigured = false;
-
-    //
-    // Enable the GPIO peripheral used for USB, and configure the USB
-    // pins.
-    //
-    ROM_SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOD);
+    ROM_SysCtlClockSet(SYSCTL_SYSDIV_4 | SYSCTL_USE_PLL | SYSCTL_OSC_MAIN | SYSCTL_XTAL_16MHZ);
+		//SysCtlPWMClockSet(SYSCTL_PWMDIV_64); 
+	
+		//Configure USB ports
+		ROM_SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOD);
     ROM_GPIOPinTypeUSBAnalog(GPIO_PORTD_BASE, GPIO_PIN_4 | GPIO_PIN_5);
-
-    //
-    // Enable the system tick.
-    //
+	
+    // Enable the GPIO port that is used for the on-board LED.
+    ROM_SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOF);
+    ROM_GPIOPinTypeGPIOOutput(GPIO_PORTF_BASE, GPIO_PIN_3 | GPIO_PIN_2);
+	
+		ConfigureUART();
+	
+		// gpio
+		SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOB);
+		SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOD);
+		SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOE);
+		SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOF);
+		GPIOPinTypeGPIOOutput(GPIO_PORTF_BASE, GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3);
+		GPIOPinTypeGPIOOutput(GPIO_PORTB_BASE, GPIO_PIN_7);
+		GPIOPinWrite(GPIO_PORTB_BASE, GPIO_PIN_7, 0);
+		
+		//USB
+		UARTprintf("Configuring USB\n");
+    g_bUSBConfigured = false;		
+    // Initialize the transmit and receive buffers.
+    USBBufferInit(&g_sTxBuffer);
+    USBBufferInit(&g_sRxBuffer);
+    USBStackModeSet(0, eUSBModeForceDevice, 0); // Set the USB stack mode to Device mode with VBUS monitoring.  
+    USBDBulkInit(0, &g_sBulkDevice); // Pass our device information to the USB library and place the device on the bus.
+		
+    UARTprintf("Waiting for host...\n");
+	
+		//uDMA
+		SysCtlPeripheralClockGating(true);
+		SysCtlPeripheralEnable(SYSCTL_PERIPH_UDMA);
+		SysCtlPeripheralSleepEnable(SYSCTL_PERIPH_UDMA);
+		IntEnable(INT_UDMAERR);
+		uDMAEnable();
+		uDMAControlBaseSet(pui8ControlTable);
+    
+    // Clear our local byte counters. 
+    //ui32RxCount = 0;
+    //ui32TxCount = 0;
+		
+		// Enable the system tick
     ROM_SysTickPeriodSet(ROM_SysCtlClockGet() / SYSTICKS_PER_SECOND);
     ROM_SysTickIntEnable();
     ROM_SysTickEnable();
+		
+		//ConfigureADC();
+		//IntMasterEnable(); //Enable all interrupts
 
-    //
-    // Tell the user what we are up to.
-    //
-    UARTprintf("Configuring USB\n");
-
-    //
-    // Initialize the transmit and receive buffers.
-    //
-    USBBufferInit(&g_sTxBuffer);
-    USBBufferInit(&g_sRxBuffer);
-
-    //
-    // Set the USB stack mode to Device mode with VBUS monitoring.
-    //
-    USBStackModeSet(0, eUSBModeForceDevice, 0);
-
-    //
-    // Pass our device information to the USB library and place the device
-    // on the bus.
-    //
-    USBDBulkInit(0, &g_sBulkDevice);
-
-    //
-    // Wait for initial configuration to complete.
-    //
-    UARTprintf("Waiting for host...\n");
-
-    //
-    // Clear our local byte counters.
-    //
-    ui32RxCount = 0;
-    ui32TxCount = 0;
-
-    //
-    // Main application loop.
-    //
     while(1)
     {
-        //
+      
         // See if any data has been transferred.
-        //
         if((ui32TxCount != g_ui32TxCount) || (ui32RxCount != g_ui32RxCount))
         {
-            //
+       
             // Has there been any transmit traffic since we last checked?
-            //
             if(ui32TxCount != g_ui32TxCount)
             {
-                //
+            
                 // Turn on the Green LED.
-                //
                 GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_3, GPIO_PIN_3);
 
-                //
+      
                 // Delay for a bit.
-                //
                 for(ui32Loop = 0; ui32Loop < 150000; ui32Loop++)
                 {
                 }
 
-                //
+         
                 // Turn off the Green LED.
-                //
                 GPIOPinWrite(GPIO_PORTF_BASE, GPIO_PIN_3, 0);
 
-                //
-                // Take a snapshot of the latest transmit count.
-                //
+   
+                // Take a snapshot of the latest transmit count.      
                 ui32TxCount = g_ui32TxCount;
             }
 
