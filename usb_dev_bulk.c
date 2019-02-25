@@ -26,16 +26,17 @@
 //*******************************************************************************
 //UDMA VARIABLES
 //*******************************************************************************
+#define ADC_O_SSFIFO1 (0x068) //ADC0 sample sequencer 1 result FIFO 
+
 #define PWM_FREQUENCY (50)
 #define PWM_MIN (30)
 #define PWM_MAX (120)
 #define PWM_ZERO (75)
 
-#define ADC_O_SSFIFO1 (0x068) //ADC0 sample sequencer 1 result FIFO 
-#define ADC_BUFFER_SIZE (32) //two 16-bit ADC sample from each of the ADC's 
-#define ADC_BUFFER_WINDOW_COUNT (2) //This is how many windows we have, this is ping and pong = 2
-#define NUM_CHANNELS (4) //This is the amount of data items to transfer
-#define FILTER_SIZE (64)
+#define ADC_BUFFER_SIZE (4) //How many ADC words for each window of ADC values
+#define ADC_BUFFER_WINDOW_COUNT (8) //This is how many windows of ADC buffers we have
+#define NUM_CHANNELS (4) //This is the amount of data items transferred each abitration point, one ADC value for each channel
+#define FILTER_SIZE (63)
 
 #define SYSTICKS_PER_SECOND     100
 #define SYSTICK_PERIOD_MS       (1000 / SYSTICKS_PER_SECOND)
@@ -305,8 +306,7 @@ uint32_t RxHandler(void *pvCBData, uint32_t ui32Event,
         case USB_EVENT_RX_AVAILABLE: {
             tUSBDBulkDevice *psDevice;
 			
-            // Get a pointer to our instance data from the callback data
-            // parameter.
+            // Get a pointer to our instance data from the callback data  parameter.
             psDevice = (tUSBDBulkDevice *)pvCBData;
 
             // Read the new packet and echo it back to the host.
@@ -376,10 +376,11 @@ void ADC00IntHandler(void) {
 	
 	//Get status of primary uDMA transfer
     ui32ModeP = uDMAChannelModeGet(UDMA_CHANNEL_ADC1 | UDMA_PRI_SELECT); 
-	UARTprintf("a");
+	
 		
 	//uDMA transfer from ADC to In buffer is done if control structure indicates STOP, reset uDMA channel
     if(ui32ModeP == UDMA_MODE_STOP) {
+		UARTprintf("a");
 				//Setup the primary channel agains
         uDMAChannelTransferSet(UDMA_CHANNEL_ADC1 | UDMA_PRI_SELECT, UDMA_MODE_PINGPONG,
 								(void *)(ADC0_BASE + ADC_O_SSFIFO1), &g_adcPingPong0[g_adcInIndex0][0], NUM_CHANNELS);		
@@ -388,14 +389,14 @@ void ADC00IntHandler(void) {
 		    							 
         g_adcInIndex0 = (g_adcInIndex0 + 1) % (ADC_BUFFER_SIZE*ADC_BUFFER_WINDOW_COUNT); //Increment buffer???
 				//Something to do with waiting for the buffer to be empty and ready??
-      /*  if((g_adcInIndex0 % ADC_BUFFER_SIZE) == 2) {
+       if((g_adcInIndex0 % ADC_BUFFER_SIZE) == 2) {
         	int32_t ready_buffer = (g_adcInIndex0 / ADC_BUFFER_SIZE);
 			
         	if(g_adcPingPongStage0[ready_buffer % ADC_BUFFER_WINDOW_COUNT] != 0)
         		g_stall0++;
        		ready_buffer = (ready_buffer - 1 + ADC_BUFFER_WINDOW_COUNT) % ADC_BUFFER_WINDOW_COUNT;
        		g_adcPingPongStage0[ready_buffer] = 1;
-        } */
+        } 
     }
     else {
 		ui32ModeA = uDMAChannelModeGet(UDMA_CHANNEL_ADC1 | UDMA_ALT_SELECT);
@@ -406,13 +407,13 @@ void ADC00IntHandler(void) {
 			uDMAChannelEnable(UDMA_CHANNEL_ADC1);
 										 
 			g_adcInIndex0 = (g_adcInIndex0 + 1) % (ADC_BUFFER_SIZE*ADC_BUFFER_WINDOW_COUNT);
-			/*if((g_adcInIndex0 % ADC_BUFFER_SIZE) == 2){
+			if((g_adcInIndex0 % ADC_BUFFER_SIZE) == 2){
 				int32_t ready_buffer = (g_adcInIndex0 / ADC_BUFFER_SIZE);
 				if(g_adcPingPongStage0[ready_buffer % ADC_BUFFER_WINDOW_COUNT] != 0)
 					g_stall0++;
 				ready_buffer = (ready_buffer - 1 + ADC_BUFFER_WINDOW_COUNT) % ADC_BUFFER_WINDOW_COUNT;
 				g_adcPingPongStage0[ready_buffer] = 1;
-			}*/
+			}
 		}
     }
 }
@@ -425,23 +426,24 @@ void ADC10IntHandler(void) {
     ADCIntClear(ADC1_BASE, 1);
 	
     ui32ModeP = uDMAChannelModeGet(UDMA_CHANNEL_SSI1TX | UDMA_PRI_SELECT);
-	UARTprintf("b");
+	
 	
     if(ui32ModeP == UDMA_MODE_STOP) {
+		UARTprintf("b");
         uDMAChannelTransferSet(UDMA_CHANNEL_SSI1TX | UDMA_PRI_SELECT, UDMA_MODE_PINGPONG,
 								(void *) (ADC1_BASE + ADC_O_SSFIFO1), &g_adcPingPong1[g_adcInIndex1][0], NUM_CHANNELS);
 								   
         uDMAChannelEnable(UDMA_CHANNEL_SSI1TX);
 									 
         g_adcInIndex1 = (g_adcInIndex1 + 1) % (ADC_BUFFER_SIZE*ADC_BUFFER_WINDOW_COUNT);
-       /* if((g_adcInIndex1 % ADC_BUFFER_SIZE) == 2) {
+        if((g_adcInIndex1 % ADC_BUFFER_SIZE) == 2) {
         	int32_t ready_buffer = (g_adcInIndex1 / ADC_BUFFER_SIZE);
 			
         	if(g_adcPingPongStage1[ready_buffer % ADC_BUFFER_WINDOW_COUNT] != 0)
         		g_stall1++;
        		ready_buffer = (ready_buffer - 1 + ADC_BUFFER_WINDOW_COUNT) % ADC_BUFFER_WINDOW_COUNT;
        		g_adcPingPongStage1[ready_buffer] = 1;
-        }*/
+        }
     }
     else {
     	ui32ModeA = uDMAChannelModeGet(UDMA_CHANNEL_SSI1TX | UDMA_ALT_SELECT);
@@ -452,14 +454,14 @@ void ADC10IntHandler(void) {
 			uDMAChannelEnable(UDMA_CHANNEL_SSI1TX);
 										 
 			g_adcInIndex1 = (g_adcInIndex1 + 1) % (ADC_BUFFER_SIZE*ADC_BUFFER_WINDOW_COUNT);									   
-			/*if((g_adcInIndex1 % ADC_BUFFER_SIZE) == 2) {
+			if((g_adcInIndex1 % ADC_BUFFER_SIZE) == 2) {
 				int32_t ready_buffer = (g_adcInIndex1 / ADC_BUFFER_SIZE);
 				
 				if(g_adcPingPongStage1[ready_buffer % ADC_BUFFER_WINDOW_COUNT] != 0)
 					g_stall1++;
 				ready_buffer = (ready_buffer - 1 + ADC_BUFFER_WINDOW_COUNT) % ADC_BUFFER_WINDOW_COUNT;
 				g_adcPingPongStage1[ready_buffer] = 1;
-			}*/
+			}
 		}
     }
 }
