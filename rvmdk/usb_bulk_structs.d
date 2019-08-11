@@ -1,0 +1,11 @@
+.\rvmdk\usb_bulk_structs.o: usb_bulk_structs.c
+.\rvmdk\usb_bulk_structs.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
+.\rvmdk\usb_bulk_structs.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h
+.\rvmdk\usb_bulk_structs.o: ..\..\..\..\inc/hw_types.h
+.\rvmdk\usb_bulk_structs.o: ..\..\..\..\driverlib/usb.h
+.\rvmdk\usb_bulk_structs.o: ..\..\..\..\usblib/usblib.h
+.\rvmdk\usb_bulk_structs.o: ..\..\..\..\usblib/usb-ids.h
+.\rvmdk\usb_bulk_structs.o: ..\..\..\..\usblib/device/usbdevice.h
+.\rvmdk\usb_bulk_structs.o: ..\..\..\..\usblib/device/usbdevicepriv.h
+.\rvmdk\usb_bulk_structs.o: ..\..\..\..\usblib/device/usbdbulk.h
+.\rvmdk\usb_bulk_structs.o: usb_bulk_structs.h

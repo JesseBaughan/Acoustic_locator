@@ -1,0 +1,65 @@
+Dependencies for Project 'usb_dev_bulk', Target 'usb_dev_bulk': (DO NOT MODIFY !)
+F (.\startup_rvmdk.S)(0x5C677849)(--cpu Cortex-M4.fp --pd "__EVAL SETA 1" -g --apcs=interwork --pd "__MICROLIB SETA 1"-IC:\Keil_v5\ARM\RV31\INC-IC:\Keil_v5\ARM\CMSIS\Include-IC:\Keil_v5\ARM\INC\Luminary--pd "__UVISION_VERSION SETA 526"-o .\rvmdk\startup_rvmdk.o --depend .\rvmdk\startup_rvmdk.d)
+F (..\..\..\..\utils\uartstdio.c)(0x5C0BAFFE)(-c --cpu Cortex-M4.fp -D__EVAL -D__MICROLIB -g -O2 --apcs=interwork --split_sections -I ..\..\..\.. --c99-IC:\Keil_v5\ARM\RV31\INC-IC:\Keil_v5\ARM\CMSIS\Include-IC:\Keil_v5\ARM\INC\Luminary-D__UVISION_VERSION="526" -Drvmdk -DPART_TM4C123GH6PM -DTARGET_IS_TM4C123_RB1 -DUART_BUFFERED-o .\rvmdk\uartstdio.o --omf_browse .\rvmdk\uartstdio.crf --depend .\rvmdk\uartstdio.d)
+I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x599EBF1E)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x599EBF1E)
+I (C:\Keil_v5\ARM\ARMCC\include\stdarg.h)(0x599EBF1A)
+I (..\..\..\..\inc/hw_ints.h)(0x5C33E5D2)
+I (..\..\..\..\inc/hw_memmap.h)(0x5C33E5D2)
+I (..\..\..\..\inc/hw_types.h)(0x5C33E5D2)
+I (..\..\..\..\inc/hw_uart.h)(0x5C33E5D2)
+I (..\..\..\..\driverlib/debug.h)(0x5C33E5D2)
+I (..\..\..\..\driverlib/interrupt.h)(0x5C33E5D2)
+I (..\..\..\..\driverlib/rom.h)(0x5C33E5D2)
+I (..\..\..\..\driverlib/rom_map.h)(0x5C33E5D2)
+I (..\..\..\..\driverlib/sysctl.h)(0x5C33E5D2)
+I (..\..\..\..\driverlib/uart.h)(0x5C33E5D2)
+I (..\..\..\..\utils/uartstdio.h)(0x5C0A00BF)
+F (.\usb_bulk_structs.c)(0x5C0A00BC)(-c --cpu Cortex-M4.fp -D__EVAL -D__MICROLIB -g -O2 --apcs=interwork --split_sections -I ..\..\..\.. --c99-IC:\Keil_v5\ARM\RV31\INC-IC:\Keil_v5\ARM\CMSIS\Include-IC:\Keil_v5\ARM\INC\Luminary-D__UVISION_VERSION="526" -Drvmdk -DPART_TM4C123GH6PM -DTARGET_IS_TM4C123_RB1 -DUART_BUFFERED-o .\rvmdk\usb_bulk_structs.o --omf_browse .\rvmdk\usb_bulk_structs.crf --depend .\rvmdk\usb_bulk_structs.d)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x599EBF1E)
+I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x599EBF1E)
+I (..\..\..\..\inc/hw_types.h)(0x5C33E5D2)
+I (..\..\..\..\driverlib/usb.h)(0x5C33E5D2)
+I (..\..\..\..\usblib/usblib.h)(0x5C0A00BF)
+I (..\..\..\..\usblib/usb-ids.h)(0x5C0A00BF)
+I (..\..\..\..\usblib/device/usbdevice.h)(0x5C0A00BF)
+I (..\..\..\..\usblib/device/usbdevicepriv.h)(0x5C0A00BF)
+I (..\..\..\..\usblib/device/usbdbulk.h)(0x5C0A00BF)
+I (usb_bulk_structs.h)(0x5C0A00BC)
+F (.\usb_dev_bulk.c)(0x5C747AA3)(-c --cpu Cortex-M4.fp -D__EVAL -D__MICROLIB -g -O2 --apcs=interwork --split_sections -I ..\..\..\.. --c99-IC:\Keil_v5\ARM\RV31\INC-IC:\Keil_v5\ARM\CMSIS\Include-IC:\Keil_v5\ARM\INC\Luminary-D__UVISION_VERSION="526" -Drvmdk -DPART_TM4C123GH6PM -DTARGET_IS_TM4C123_RB1 -DUART_BUFFERED-o .\rvmdk\usb_dev_bulk.o --omf_browse .\rvmdk\usb_dev_bulk.crf --depend .\rvmdk\usb_dev_bulk.d)
+I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x599EBF1E)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x599EBF1E)
+I (..\..\..\..\inc/hw_ints.h)(0x5C33E5D2)
+I (..\..\..\..\inc/hw_memmap.h)(0x5C33E5D2)
+I (..\..\..\..\inc/hw_types.h)(0x5C33E5D2)
+I (..\..\..\..\driverlib/debug.h)(0x5C33E5D2)
+I (..\..\..\..\driverlib/fpu.h)(0x5C33E5D2)
+I (..\..\..\..\driverlib/gpio.h)(0x5C33E5D2)
+I (..\..\..\..\driverlib/interrupt.h)(0x5C33E5D2)
+I (..\..\..\..\driverlib/pin_map.h)(0x5C33E5D2)
+I (..\..\..\..\driverlib/sysctl.h)(0x5C33E5D2)
+I (..\..\..\..\driverlib/systick.h)(0x5C33E5D2)
+I (..\..\..\..\driverlib/timer.h)(0x5C33E5D2)
+I (..\..\..\..\driverlib/uart.h)(0x5C33E5D2)
+I (..\..\..\..\driverlib/rom.h)(0x5C33E5D2)
+I (..\..\..\..\usblib/usblib.h)(0x5C0A00BF)
+I (..\..\..\..\usblib/usb-ids.h)(0x5C0A00BF)
+I (..\..\..\..\usblib/device/usbdevice.h)(0x5C0A00BF)
+I (..\..\..\..\usblib/device/usbdevicepriv.h)(0x5C0A00BF)
+I (..\..\..\..\usblib/device/usbdbulk.h)(0x5C0A00BF)
+I (..\..\..\..\utils/uartstdio.h)(0x5C0A00BF)
+I (C:\Keil_v5\ARM\ARMCC\include\stdarg.h)(0x599EBF1A)
+I (..\..\..\..\utils/ustdlib.h)(0x5C0A00BF)
+I (C:\Keil_v5\ARM\ARMCC\include\time.h)(0x599EBF1E)
+I (usb_bulk_structs.h)(0x5C0A00BC)
+I (..\..\..\..\driverlib/adc.h)(0x5C33E5D2)
+I (..\..\..\..\driverlib/udma.h)(0x5C33E5D2)
+F (..\..\..\..\utils\ustdlib.c)(0x5C0A00BF)(-c --cpu Cortex-M4.fp -D__EVAL -D__MICROLIB -g -O2 --apcs=interwork --split_sections -I ..\..\..\.. --c99-IC:\Keil_v5\ARM\RV31\INC-IC:\Keil_v5\ARM\CMSIS\Include-IC:\Keil_v5\ARM\INC\Luminary-D__UVISION_VERSION="526" -Drvmdk -DPART_TM4C123GH6PM -DTARGET_IS_TM4C123_RB1 -DUART_BUFFERED-o .\rvmdk\ustdlib.o --omf_browse .\rvmdk\ustdlib.crf --depend .\rvmdk\ustdlib.d)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x599EBF1E)
+I (..\..\..\..\driverlib/debug.h)(0x5C33E5D2)
+I (..\..\..\..\utils/ustdlib.h)(0x5C0A00BF)
+I (C:\Keil_v5\ARM\ARMCC\include\stdarg.h)(0x599EBF1A)
+I (C:\Keil_v5\ARM\ARMCC\include\time.h)(0x599EBF1E)
+F (..\..\..\..\driverlib\rvmdk\driverlib.lib)(0x5C33E5D2)()
+F (..\..\..\..\usblib\rvmdk\usblib.lib)(0x5C0A00BF)()
+F (.\readme.txt)(0x5C0A00BC)()
