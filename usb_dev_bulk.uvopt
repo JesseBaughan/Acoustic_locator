@@ -154,34 +154,100 @@
           <Name></Name>
         </SetRegEntry>
       </TargetDriverDllRegistry>
-      <Breakpoint/>
+      <Breakpoint>
+        <Bp>
+          <Number>0</Number>
+          <Type>0</Type>
+          <LineNumber>435</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>1204</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>.\usb_dev_bulk.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression>\\usb_dev_bulk\usb_dev_bulk.c\435</Expression>
+        </Bp>
+        <Bp>
+          <Number>1</Number>
+          <Type>0</Type>
+          <LineNumber>385</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>1002</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>.\usb_dev_bulk.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression>\\usb_dev_bulk\usb_dev_bulk.c\385</Expression>
+        </Bp>
+        <Bp>
+          <Number>2</Number>
+          <Type>0</Type>
+          <LineNumber>129</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>14632</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>.\usb_dev_bulk.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression>\\usb_dev_bulk\usb_dev_bulk.c\129</Expression>
+        </Bp>
+      </Breakpoint>
       <WatchWindow1>
         <Ww>
           <count>0</count>
           <WinNumber>1</WinNumber>
-          <ItemText>g_adcPingPong1[g_adcInIndex1]</ItemText>
+          <ItemText>g_ui32DMAErrCount</ItemText>
         </Ww>
         <Ww>
           <count>1</count>
           <WinNumber>1</WinNumber>
-          <ItemText>g_adcPingPong0[g_adcInIndex0]</ItemText>
+          <ItemText>g_adcInIndex0,0x0A</ItemText>
         </Ww>
         <Ww>
           <count>2</count>
           <WinNumber>1</WinNumber>
-          <ItemText>g_ui32DMAErrCount</ItemText>
+          <ItemText>ready_buffer</ItemText>
         </Ww>
         <Ww>
           <count>3</count>
           <WinNumber>1</WinNumber>
-          <ItemText>g_adcInIndex0,0x0A</ItemText>
-        </Ww>
-        <Ww>
-          <count>4</count>
-          <WinNumber>1</WinNumber>
-          <ItemText>ready_buffer</ItemText>
+          <ItemText>g_adcPingPong0[g_adcInIndex0]</ItemText>
         </Ww>
       </WatchWindow1>
+      <WatchWindow2>
+        <Ww>
+          <count>0</count>
+          <WinNumber>2</WinNumber>
+          <ItemText>g_adcInIndex1</ItemText>
+        </Ww>
+        <Ww>
+          <count>1</count>
+          <WinNumber>2</WinNumber>
+          <ItemText>g_adcPingPong1[g_adcInIndex1]</ItemText>
+        </Ww>
+        <Ww>
+          <count>2</count>
+          <WinNumber>2</WinNumber>
+          <ItemText>ui32Status</ItemText>
+        </Ww>
+        <Ww>
+          <count>3</count>
+          <WinNumber>2</WinNumber>
+          <ItemText>g_ui32DMAErrCount</ItemText>
+        </Ww>
+      </WatchWindow2>
       <Tracepoint>
         <THDelay>0</THDelay>
       </Tracepoint>

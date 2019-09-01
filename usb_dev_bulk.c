@@ -33,9 +33,9 @@
 #define PWM_MAX (120)
 #define PWM_ZERO (75)
 
-#define ADC_BUFFER_SIZE (4) //How many ADC words for each window of ADC values
-#define ADC_BUFFER_WINDOW_COUNT (8) //This is how many windows of ADC buffers we have
-#define NUM_CHANNELS (4) //This is the amount of data items transferred each abitration point, one ADC value for each channel
+#define ADC_BUFFER_SIZE (16) //How many ADC words for each window of ADC values
+#define ADC_BUFFER_WINDOW_COUNT (4) //This is how many windows we have of CH2,CH1, TS,TS samples
+#define NUM_CHANNELS (4) //This is the amount of data items transferred each abitration point, one ADC value for each of the 4 channels
 #define FILTER_SIZE (63)
 
 #define SYSTICKS_PER_SECOND     100
@@ -125,7 +125,9 @@ void SysTickIntHandler(void)
 
 void uDMAErrorHandler(void)
 {
-	UARTprintf("ERROR CUNT");
+	UARTprintf("ERROR CUNT: ");
+	UARTprintf("%d",g_adcInIndex0);
+	
 	uint32_t ui32Status;
 	ui32Status = uDMAErrorStatusGet();
 	if(ui32Status)
@@ -380,40 +382,42 @@ void ADC00IntHandler(void) {
 		
 	//uDMA transfer from ADC to In buffer is done if control structure indicates STOP, reset uDMA channel
     if(ui32ModeP == UDMA_MODE_STOP) {
-		UARTprintf("a");
-				//Setup the primary channel agains
+		UARTprintf("0p");
+	   //Setup the primary channel again
         uDMAChannelTransferSet(UDMA_CHANNEL_ADC1 | UDMA_PRI_SELECT, UDMA_MODE_PINGPONG,
 								(void *)(ADC0_BASE + ADC_O_SSFIFO1), &g_adcPingPong0[g_adcInIndex0][0], NUM_CHANNELS);		
 		
         uDMAChannelEnable(UDMA_CHANNEL_ADC1); //Must be re-enabled
 		    							 
-        g_adcInIndex0 = (g_adcInIndex0 + 1) % (ADC_BUFFER_SIZE*ADC_BUFFER_WINDOW_COUNT); //Increment buffer???
-				//Something to do with waiting for the buffer to be empty and ready??
-       if((g_adcInIndex0 % ADC_BUFFER_SIZE) == 2) {
-        	int32_t ready_buffer = (g_adcInIndex0 / ADC_BUFFER_SIZE);
-			
-        	if(g_adcPingPongStage0[ready_buffer % ADC_BUFFER_WINDOW_COUNT] != 0)
-        		g_stall0++;
-       		ready_buffer = (ready_buffer - 1 + ADC_BUFFER_WINDOW_COUNT) % ADC_BUFFER_WINDOW_COUNT;
-       		g_adcPingPongStage0[ready_buffer] = 1;
-        } 
+        g_adcInIndex0 = (g_adcInIndex0 + 1) % (ADC_BUFFER_SIZE*ADC_BUFFER_WINDOW_COUNT); //Circular buffer of length 16
+		
+		//USED FOR STALLING THE PROCESS (DO NOTHING) WHILST DATA STILL BEING ADDED TO BUFFER
+//       if((g_adcInIndex0 % ADC_BUFFER_SIZE) == 2) {
+//        	int32_t ready_buffer = (g_adcInIndex0 / ADC_BUFFER_SIZE);
+//			
+//        	if(g_adcPingPongStage0[ready_buffer % ADC_BUFFER_WINDOW_COUNT] != 0)
+//        		g_stall0++;
+//       		ready_buffer = (ready_buffer - 1 + ADC_BUFFER_WINDOW_COUNT) % ADC_BUFFER_WINDOW_COUNT;
+//       		g_adcPingPongStage0[ready_buffer] = 1;
+//        } 
     }
     else {
 		ui32ModeA = uDMAChannelModeGet(UDMA_CHANNEL_ADC1 | UDMA_ALT_SELECT);
 		if(ui32ModeA == UDMA_MODE_STOP){
+			//UARTprintf("0a");
 			uDMAChannelTransferSet(UDMA_CHANNEL_ADC1 | UDMA_ALT_SELECT, UDMA_MODE_PINGPONG,
 								  (void *)(ADC0_BASE + ADC_O_SSFIFO1), &g_adcPingPong0[g_adcInIndex0][0], NUM_CHANNELS); //IS THIS CORRECT??
 			
 			uDMAChannelEnable(UDMA_CHANNEL_ADC1);
 										 
 			g_adcInIndex0 = (g_adcInIndex0 + 1) % (ADC_BUFFER_SIZE*ADC_BUFFER_WINDOW_COUNT);
-			if((g_adcInIndex0 % ADC_BUFFER_SIZE) == 2){
-				int32_t ready_buffer = (g_adcInIndex0 / ADC_BUFFER_SIZE);
-				if(g_adcPingPongStage0[ready_buffer % ADC_BUFFER_WINDOW_COUNT] != 0)
-					g_stall0++;
-				ready_buffer = (ready_buffer - 1 + ADC_BUFFER_WINDOW_COUNT) % ADC_BUFFER_WINDOW_COUNT;
-				g_adcPingPongStage0[ready_buffer] = 1;
-			}
+//			if((g_adcInIndex0 % ADC_BUFFER_SIZE) == 2){
+//				int32_t ready_buffer = (g_adcInIndex0 / ADC_BUFFER_SIZE);
+//				if(g_adcPingPongStage0[ready_buffer % ADC_BUFFER_WINDOW_COUNT] != 0)
+//					g_stall0++;
+//				ready_buffer = (ready_buffer - 1 + ADC_BUFFER_WINDOW_COUNT) % ADC_BUFFER_WINDOW_COUNT;
+//				g_adcPingPongStage0[ready_buffer] = 1;
+//			}
 		}
     }
 }
@@ -429,39 +433,40 @@ void ADC10IntHandler(void) {
 	
 	
     if(ui32ModeP == UDMA_MODE_STOP) {
-		UARTprintf("b");
+		UARTprintf("1p");
         uDMAChannelTransferSet(UDMA_CHANNEL_SSI1TX | UDMA_PRI_SELECT, UDMA_MODE_PINGPONG,
 								(void *) (ADC1_BASE + ADC_O_SSFIFO1), &g_adcPingPong1[g_adcInIndex1][0], NUM_CHANNELS);
 								   
         uDMAChannelEnable(UDMA_CHANNEL_SSI1TX);
 									 
         g_adcInIndex1 = (g_adcInIndex1 + 1) % (ADC_BUFFER_SIZE*ADC_BUFFER_WINDOW_COUNT);
-        if((g_adcInIndex1 % ADC_BUFFER_SIZE) == 2) {
-        	int32_t ready_buffer = (g_adcInIndex1 / ADC_BUFFER_SIZE);
-			
-        	if(g_adcPingPongStage1[ready_buffer % ADC_BUFFER_WINDOW_COUNT] != 0)
-        		g_stall1++;
-       		ready_buffer = (ready_buffer - 1 + ADC_BUFFER_WINDOW_COUNT) % ADC_BUFFER_WINDOW_COUNT;
-       		g_adcPingPongStage1[ready_buffer] = 1;
-        }
+//        if((g_adcInIndex1 % ADC_BUFFER_SIZE) == 2) {
+//        	int32_t ready_buffer = (g_adcInIndex1 / ADC_BUFFER_SIZE);
+//			
+//        	if(g_adcPingPongStage1[ready_buffer % ADC_BUFFER_WINDOW_COUNT] != 0)
+//        		g_stall1++;
+//       		ready_buffer = (ready_buffer - 1 + ADC_BUFFER_WINDOW_COUNT) % ADC_BUFFER_WINDOW_COUNT;
+//       		g_adcPingPongStage1[ready_buffer] = 1;
+//        }
     }
     else {
     	ui32ModeA = uDMAChannelModeGet(UDMA_CHANNEL_SSI1TX | UDMA_ALT_SELECT);
 		if(ui32ModeA == UDMA_MODE_STOP) {
+			//UARTprintf("1a");
 			uDMAChannelTransferSet(UDMA_CHANNEL_SSI1TX | UDMA_ALT_SELECT, UDMA_MODE_PINGPONG,
 								  (void *) (ADC1_BASE + ADC_O_SSFIFO1), &g_adcPingPong1[g_adcInIndex1][0], NUM_CHANNELS);
 			
 			uDMAChannelEnable(UDMA_CHANNEL_SSI1TX);
 										 
 			g_adcInIndex1 = (g_adcInIndex1 + 1) % (ADC_BUFFER_SIZE*ADC_BUFFER_WINDOW_COUNT);									   
-			if((g_adcInIndex1 % ADC_BUFFER_SIZE) == 2) {
-				int32_t ready_buffer = (g_adcInIndex1 / ADC_BUFFER_SIZE);
-				
-				if(g_adcPingPongStage1[ready_buffer % ADC_BUFFER_WINDOW_COUNT] != 0)
-					g_stall1++;
-				ready_buffer = (ready_buffer - 1 + ADC_BUFFER_WINDOW_COUNT) % ADC_BUFFER_WINDOW_COUNT;
-				g_adcPingPongStage1[ready_buffer] = 1;
-			}
+//			if((g_adcInIndex1 % ADC_BUFFER_SIZE) == 2) {
+//				int32_t ready_buffer = (g_adcInIndex1 / ADC_BUFFER_SIZE);
+//				
+//				if(g_adcPingPongStage1[ready_buffer % ADC_BUFFER_WINDOW_COUNT] != 0)
+//					g_stall1++;
+//				ready_buffer = (ready_buffer - 1 + ADC_BUFFER_WINDOW_COUNT) % ADC_BUFFER_WINDOW_COUNT;
+//				g_adcPingPongStage1[ready_buffer] = 1;
+//			}
 		}
     }
 }
@@ -473,27 +478,33 @@ void ConfigureADC (void) {
 	SysCtlDelay(3);
 	
 	GPIOPinTypeADC(GPIO_PORTE_BASE, GPIO_PIN_2 | GPIO_PIN_1); // 1, 2
-	//ADC 0
-	//Configure sequencers for ADC 0 
+	
+//	//ADC 0
+//	//Configure sequencers for ADC 0 
 	ADCHardwareOversampleConfigure(ADC0_BASE, HW_AVERAGE);
-	ADCSequenceConfigure(ADC0_BASE, 1, ADC_TRIGGER_ALWAYS, 0);
-	ADCSequenceStepConfigure(ADC0_BASE, 1, 0, ADC_CTL_CH2);
-	ADCSequenceStepConfigure(ADC0_BASE, 1, 1, ADC_CTL_CH1);
+	ADCSequenceConfigure(ADC0_BASE, 1, ADC_TRIGGER_ALWAYS, 0); 			//Set which sample sequencer to use, and priotity to 0(HIGHEST)
+	ADCSequenceStepConfigure(ADC0_BASE, 1, 0, ADC_CTL_CH2); 			//pin PE1
+	ADCSequenceStepConfigure(ADC0_BASE, 1, 1, ADC_CTL_CH1); 			//pin PE2
 	ADCSequenceStepConfigure(ADC0_BASE, 1, 2, ADC_CTL_TS);
 	ADCSequenceStepConfigure(ADC0_BASE, 1, 3, ADC_CTL_TS | ADC_CTL_IE | ADC_CTL_END);
 	
-	//Enable DMA for sample sequwencers; Allows DMA requests to be generated based on the FIFO level of the sample sequencer.
+	//Enable DMA for sample sequencer; Allows DMA requests to be generated based on the FIFO level of the sample sequencer.
 	ADCSequenceDMAEnable(ADC0_BASE, 1); 
 	
+	//Setup channel for AD0 sequencer 1 - that is UDMA_CHANNEL_ADC(seq)1
 	uDMAChannelAttributeDisable(UDMA_CHANNEL_ADC1,
-                                    UDMA_ATTR_ALTSELECT | UDMA_ATTR_USEBURST |
-                                    UDMA_ATTR_HIGH_PRIORITY |
-                                    UDMA_ATTR_REQMASK);
-
+									UDMA_ATTR_ALTSELECT | UDMA_ATTR_USEBURST |
+									UDMA_ATTR_HIGH_PRIORITY |
+									UDMA_ATTR_REQMASK);
+	
+	//Setup our primary channel
+	//Transfer 32-bits at a time, don't increment source address, increment destination by 32-bits, 
+	//Arbitration size is 8 which means will aritrate afte 9 items transferred
 	uDMAChannelControlSet(UDMA_CHANNEL_ADC1 | UDMA_PRI_SELECT,
                             UDMA_SIZE_32 | UDMA_SRC_INC_NONE | UDMA_DST_INC_32 |
                               UDMA_ARB_4); //Transfer data size is 32 bits, arbitration size is 4 which is same size as ADC FIFO
-
+	
+	//Setup alternate channel
 	uDMAChannelControlSet(UDMA_CHANNEL_ADC1 | UDMA_ALT_SELECT,
     						UDMA_SIZE_32 | UDMA_SRC_INC_NONE | UDMA_DST_INC_32 |
                               UDMA_ARB_4);
@@ -501,19 +512,18 @@ void ConfigureADC (void) {
 	uDMAChannelTransferSet(UDMA_CHANNEL_ADC1 | UDMA_PRI_SELECT,
                                UDMA_MODE_PINGPONG,
 							   (void *) (ADC0_BASE + ADC_O_SSFIFO1),
-							   &g_adcPingPong0[0][0], NUM_CHANNELS); //source is ADC0 FIFO, destination is adcPingPong0 - A
+							   &g_adcPingPong0[0][0], NUM_CHANNELS); //source is ADC0 FIFO, destination is adcPingPong0[0][]
 
 	uDMAChannelTransferSet(UDMA_CHANNEL_ADC1 | UDMA_ALT_SELECT,
                                UDMA_MODE_PINGPONG,
 							   (void *) (ADC0_BASE + ADC_O_SSFIFO1),
-							   &g_adcPingPong0[1][0], NUM_CHANNELS); //source is ADC0 FIFO, destination is adcPingPong0 - B
+							   &g_adcPingPong0[1][0], NUM_CHANNELS); //source is ADC0 FIFO, destination is adcPingPong0[1][]
 								 
 	g_adcInIndex0 = 2;
 							 
 	//ADC 1
-	//Configure sequencers for ADC 1
 	ADCHardwareOversampleConfigure(ADC1_BASE, HW_AVERAGE);
-	ADCSequenceConfigure(ADC1_BASE, 1, ADC_TRIGGER_ALWAYS, 1);
+	ADCSequenceConfigure(ADC1_BASE, 1, ADC_TRIGGER_ALWAYS, 0);
 	ADCSequenceStepConfigure(ADC1_BASE, 1, 0, ADC_CTL_CH2);
 	ADCSequenceStepConfigure(ADC1_BASE, 1, 1, ADC_CTL_CH1);
 	ADCSequenceStepConfigure(ADC1_BASE, 1, 2, ADC_CTL_TS);
@@ -521,7 +531,7 @@ void ConfigureADC (void) {
 	ADCPhaseDelaySet(ADC1_BASE, ADC_PHASE_180);
 	
 	//Enable DMA for sample sequwencers; Allows DMA requests to be generated based on the FIFO level of the sample sequencer.
-	ADCSequenceDMAEnable(ADC1_BASE, 1);  //Send interrupt to uDMA when FIFO full - sequence is complete
+	ADCSequenceDMAEnable(ADC1_BASE, 1);  //Send interrupt to uDMA when FIFO full i.e when the sequence is complete
 								 
 	uDMAChannelAttributeDisable(UDMA_CHANNEL_SSI1TX,
                                     UDMA_ATTR_ALTSELECT | UDMA_ATTR_USEBURST |
@@ -551,14 +561,14 @@ void ConfigureADC (void) {
 	g_adcInIndex1 = 2;
 								 
 	//ADC 0 and ADC 1
-	uDMAChannelEnable(UDMA_CHANNEL_ADC1);
-	uDMAChannelEnable(UDMA_CHANNEL_SSI1TX);
+	uDMAChannelEnable(UDMA_CHANNEL_ADC1); //ADC 0 - ss1
+	uDMAChannelEnable(UDMA_CHANNEL_SSI1TX); //ADC1 - ss1
 
 	// make sure interrupt flag is clear
 	// enable the interrupt for the module and for the sequence
 	ADCIntClear(ADC0_BASE, 1);
 	ADCIntClear(ADC1_BASE, 1);
-	ADCIntEnable(ADC0_BASE, 1);
+    ADCIntEnable(ADC0_BASE, 1);
 	ADCIntEnable(ADC1_BASE, 1);
 	IntEnable(INT_ADC0SS1);
 	IntEnable(INT_ADC1SS1);
@@ -583,17 +593,15 @@ int main(void) {
     ROM_SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOD);
     ROM_GPIOPinTypeUSBAnalog(GPIO_PORTD_BASE, GPIO_PIN_4 | GPIO_PIN_5);
 	
-    // Enable the GPIO port that is used for the on-board LED.
+	//Gpio
+	ROM_SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOE); //port E used for ADC inputs
+	ROM_SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOB); //used for PWM
     ROM_SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOF);
-    ROM_GPIOPinTypeGPIOOutput(GPIO_PORTF_BASE, GPIO_PIN_3 | GPIO_PIN_2);
+    ROM_GPIOPinTypeGPIOOutput(GPIO_PORTF_BASE, GPIO_PIN_3 | GPIO_PIN_2);	
+	ROM_GPIOPinTypeGPIOOutput(GPIO_PORTB_BASE, GPIO_PIN_7);
+	GPIOPinWrite(GPIO_PORTB_BASE, GPIO_PIN_7, 0);
 	
 	ConfigureUART();
-	
-	// gpio
-	SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOB);
-	SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOE);
-	GPIOPinTypeGPIOOutput(GPIO_PORTB_BASE, GPIO_PIN_7);
-	GPIOPinWrite(GPIO_PORTB_BASE, GPIO_PIN_7, 0);
 		
 	//USB
 	UARTprintf("Configuring USB\n");
